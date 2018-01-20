@@ -1,0 +1,706 @@
+White Wines Quality Exploration by Sanjeev Yadav
+========================================================
+
+```{r packages, echo = F, message=F, warning=F}
+knitr::opts_chunk$set(echo = F, message=F, warning=F)
+# Load all of the packages that you end up using in your analysis in this code 
+#chunk.
+
+# Notice that the parameter "echo" was set to FALSE for this code chunk. 
+# This prevents the code from displaying in the knitted HTML output. You should
+#set echo=FALSE for all code chunks in your file, unless it makes sense for your report to show the code that generated a particular plot.
+
+# The other parameters for "message" and "warning" should also be set to FALSE
+# for other code chunks once you have verified that each plot comes out as you
+# want it to. This will clean up the flow of your report.
+
+library(ggplot2)
+library(dplyr)
+library(gridExtra)
+library(GGally)
+library(RColorBrewer)
+```
+
+```{r Load_the_Data, echo=F}
+# Load the Data
+w <- read.csv("wineQualityWhites.csv")
+# remove the index column
+w$X <- NULL
+```
+
+This report explores a dataset containing quality and related chemical
+properties for 4898 white wines.
+
+# Univariate Plots Section
+
+```{r dim, echo=F}
+dim(w)
+```
+
+```{r structure, echo = F}
+str(w)
+```
+
+```{r summary, echo = F}
+summary(w)
+```
+
+Our dataset consists of 12 variables and 4898 observations. Most of the wines 
+have quality 5.878, ranging from 3 to 9.  About 75% of the wines have residual
+sugar below 10 gram/litre. Some wines have no citric acid in them. Maximum
+alcohol content in white wines is 14.2%. 
+
+
+```{r quality, echo=F, message=F, warning=F}
+ggplot(w)+
+  geom_bar(aes(factor(quality)))+
+  xlab("quality")+
+  theme_bw()
+```
+
+Quality distribution looks like a normal distribution with center at 6. Mode of
+the distribution is also 6.
+
+```{r pH1, echo=F, message=F, warning=F}
+qplot(pH, data = w)+
+  theme_bw()
+```
+
+
+```{r pH2, echo=F, message=F, warning=F}
+ggplot(w)+
+  geom_histogram(aes(pH),
+                 binwidth = 0.01)+
+  scale_x_continuous(breaks = seq(min(w$pH),
+                                  max(w$pH),
+                                  0.1))+
+  theme_bw()
+```
+
+Distribution of pH is a normal distribution. Most of the wines are moderately
+acidic with peaks around 3.12.
+
+```{r sulphates1, echo = F, message=F, warning=F}
+qplot(sulphates, data = w)+
+  theme_bw()
+```
+
+```{r sulphates2, echo = F, message=F, warning=F}
+ggplot(w)+
+  geom_histogram(aes(sulphates),
+                 binwidth = 0.01)+
+  xlab("sulphates(g / dm^3)")+
+  scale_x_continuous(breaks = seq(min(w$sulphates),
+                                  max(w$sulphates),
+                                  0.05))+
+  theme_bw()
+```
+
+Distribution of sulphates is a right-skewed normal distribution, with most of
+the wines having sulphates around 0.45 g/dm^3.
+
+```{r density1, echo=F, message=F, warning=F}
+qplot(density, data = w)+
+  theme_bw()
+```
+```{r density2, echo=F, message=F, warning=F}
+ggplot(w)+
+  geom_histogram(aes(density),
+                 binwidth = 0.0001)+
+  xlim(min(w$density),1.005)+
+  theme_bw()
+```
+
+```{r density.summary, echo = F, message=F, warning=F}
+summary(w$density)
+```
+
+Density distribution is a normal distribution with mean = 0.994. There are some
+outlier above 1.01.
+
+```{r alcohol1, echo = F, message=F, warning=F}
+qplot(alcohol, data = w)+
+  theme_bw()
+```
+
+
+```{r alcohol2, echo=F, message=F, warning=F}
+ggplot(w)+
+  geom_histogram(aes(alcohol),
+                 binwidth = 0.1)+
+  scale_x_continuous(breaks = seq(min(w$alcohol),
+                                  max(w$alcohol),
+                                  0.5))+
+  theme_bw()
+```
+
+Distribution of alcohol content is right skewed. High alcohol content is harmful
+to health, this may be the reason why most of the wines have alcohol content
+around 9.5.
+
+```{r total.SO2.1, echo = F, message=F, warning=F}
+qplot(total.sulfur.dioxide, data = w)+
+  theme_bw()
+```
+
+```{r total.SO2.2, echo = F, message=F, warning=F}
+ggplot(w)+
+  geom_histogram(aes(total.sulfur.dioxide),
+                 binwidth = 2)+
+  scale_x_continuous(breaks = seq(0,250,25),
+                     limits = c(0,250))+
+  theme_bw()
+```
+
+```{r total.so2.summary, echo = F, message=F, warning=F}
+summary(w$total.sulfur.dioxide)
+```
+
+The total sulfur dioxide follow a normal distribution with mean at 138.4. There
+are some outliers above 250.
+
+```{r free.SO2.1}
+qplot(free.sulfur.dioxide, data = w)+
+  theme_bw()
+```
+```{r free.SO2.2}
+ggplot(w)+
+  geom_histogram(aes(free.sulfur.dioxide),
+                 binwidth = 2)+
+  scale_x_continuous(breaks = seq(min(w$free.sulfur.dioxide),
+                                  100,
+                                  10),
+                     limits = c(min(w$free.sulfur.dioxide),
+                                100))+
+  theme_bw()
+```
+
+```{r free.so2.summary}
+summary(w$free.sulfur.dioxide)
+```
+
+The free sulfur dioxide has a normal distribution with mean around 35.3 and some
+outlier above 100.
+
+```{r chlorides1}
+qplot(chlorides, data = w)+
+  theme_bw()
+```
+
+```{r chlorides2, echo=F, message=F, warning=F}
+ggplot(w)+
+  geom_histogram(aes(chlorides),
+                 binwidth = 0.001)+
+  scale_x_continuous(breaks = seq(min(w$chlorides),
+                                  0.2,
+                                  0.02),
+                     limits = c(min(w$chlorides),
+                                0.2))+
+  xlab("chlorides(g / dm^3")+
+  theme_bw()
+```
+
+```{r chlorides.summary}
+summary(w$chlorides)
+```
+
+50% of the wines have chlorides between 0.036 and 0.05. The distribution is
+highly right skewed.
+
+```{r res.sug1}
+qplot(residual.sugar, data = w)+
+  theme_bw()
+```
+
+```{r res.sug2, echo=F, message=F, warning=F}
+ggplot(w)+
+  geom_histogram(aes(residual.sugar),
+                 binwidth = 0.02)+
+  #xlim(min(w$residual.sugar),20)+
+  scale_x_log10(breaks = c(1,2,5,10,20))+
+  theme_bw()+
+  xlab("residual sugar( g / dm^3)")
+```
+
+Using log scale to better understand the long tailed data. The transformed
+distribution of residual sugar looks bimodal with peaks around 1.5 and around 10.
+
+```{r citric.acid1}
+qplot(citric.acid, data = w)+
+  theme_bw()
+```
+
+```{r citric.acid2}
+ggplot(w)+
+  geom_histogram(aes(citric.acid),
+                 binwidth = 0.01)+
+  xlim(min(w$citric.acid),0.75)+
+  xlab("citric acid (in g / dm^3)")+
+  theme_bw()
+```
+
+```{r citric.acid.summary}
+summary(w$citric.acid)
+```
+
+Citric acid follows a normal distribution with mean near 0.33 and some outliers
+above 0.75. Using binwidth = 0.01 shows that there is an unexpected peak around
+0.5.
+
+```{r volatile.acidity1}
+qplot(volatile.acidity, data = w)+
+  theme_bw()
+```
+
+```{r volatile.acidity2}
+ggplot(w)+
+  geom_histogram(aes(volatile.acidity),
+                 binwidth = 0.009)+
+  scale_x_continuous(breaks = seq(min(w$volatile.acidity),
+                                  max(w$volatile.acidity),
+                                  0.1),
+                     limits = c(0.08,0.68))+
+  xlab("volatile acidity(acetic acid in g / dm^3)")+
+  theme_bw()
+```
+
+Volatile acidity follows a right-skewed normal distribution with with peaks 
+around 0.28.
+
+```{r fix.acidity1}
+qplot(fixed.acidity, data = w)+
+  theme_bw()
+```
+
+```{r fixed.acidity2, echo=F, message=F, warning=F}
+ggplot(w)+
+  geom_histogram(aes(fixed.acidity),
+                 binwidth = 0.1)+
+  scale_x_continuous(breaks = seq(4.8,9.8,1),
+                     limits = c(4.8,9.8))+
+  xlab("fixed acidity (tartaric acid in g / dm^3)")+
+  theme_bw()
+```
+
+The fixed acidity has normal distribution with mean near 6.8 and some outliers
+above 9.8.
+
+A new feature can be created by summing up all the acidities. The total acidity
+is the amount of fixed acidity plus the volatile acidity. Fixed acidity includes
+only tartaric acid and volatile acidity includes acetic acid. So, the total
+acidity is the sum of all the acidities.
+
+```{r total.acidity, echo=T}
+w$total.acidity <- w$fixed.acidity + w$volatile.acidity + w$citric.acid
+```
+
+```{r total.acidity2}
+qplot(total.acidity, data = w)+
+  theme_bw()
+```
+
+```{r}
+ggplot(w)+
+  geom_histogram(aes(total.acidity),
+                 binwidth = 0.01)+
+  scale_x_continuous(breaks = seq(4,
+                               15,
+                               1))+
+  theme_bw()
+```
+```{r}
+summary(w$total.acidity)
+```
+
+It will be helpful to see the relationship between total acidity and quality of
+wine. 
+
+# Univariate Analysis
+
+### What is the structure of your dataset?
+
+There are 4898 white wines with 12 features(fixed acidity, volatile acidity,
+citric acid, residual sugar, chlorides, free sulfur dioxide, total sulfur
+dioxide, density, pH, sulphates, alcohol and quality). At least 3 wine experts
+rated the quality of each wine, providing a rating between 0(very bad) and
+10(very excellent). All the 11 chemical properties are numerical values of
+different ranges.
+
+It will be helpful to treat quality variable as ordered categorical variable.
+
+```{r quality.level, echo=T}
+w$quality.level <- ordered(w$quality, levels = c(3:9))
+```
+
+
+Other observations:
+
+Most of the variables have normal distribution with some outliers.
+
+### What is/are the main feature(s) of interest in your dataset?
+
+The feature which we are trying to study is the quality of wine.Most of the
+wines have average quality rating. We will use the given chemical properties
+to predict the quality of wine. 
+
+### What other features in the dataset do you think will help support your \
+investigation into your feature(s) of interest?
+
+A good quality wine depends on the following factors: acid content and combined
+(sugar + alcohol) content. Other interesting features for this investigation can
+be: fixed.acidity, volatile.acidity, citric.acid, alcohol, residual.sugar and
+quality.
+
+### Did you create any new variables from existing variables in the dataset?
+
+Total acidity is the sum of the acids in this dataset. It included volatile
+acidity(acetic acid), fixed acidity(tartaric acid) and citric acid.
+
+### Of the features you investigated, were there any unusual distributions? \
+Did you perform any operations on the data to tidy, adjust, or change the form \
+of the data? If so, why did you do this?
+
+Residual sugar has the most unusual distribution. Using log10 scale on data
+shows that residual sugar had a bimodal distrrbution. Most of the other
+variables followed normal distribution, some of them were right skewed.
+
+# Bivariate Plots Section
+
+```{r ggpairs1, fig.height=12, fig.width=12}
+set.seed(101)
+ggpairs(w[sample.int(nrow(w), 1000),])
+```
+ 
+
+Density is strongly correlated with alcohol and residual sugar. This is an
+unexpected correlation. Lets see correlation matrix for only these features.
+
+```{r}
+cor(w[,c("residual.sugar", "density", "alcohol", "quality", "total.acidity")])
+```
+
+```{r ggpairs2}
+set.seed(101)
+ggpairs(w[sample.int(nrow(w), 1000), c("residual.sugar", "density", "alcohol", "quality", "total.acidity")])
+```
+
+Lets see how these features are related with one another.
+
+```{r alcohol.density}
+ggplot(aes(alcohol,density), data = w)+
+  geom_point(color = 'blue', alpha = 0.2, position = 'jitter')+
+  coord_cartesian(xlim = c(quantile(w$alcohol, 0.05), quantile(w$alcohol, 0.95)),
+                  ylim = c(quantile(w$density, 0.01), quantile(w$density, 0.99)))+
+  geom_smooth(method = 'lm', color = 'red')+
+  theme_bw()+
+  ggtitle("Density vs Alcohol")
+```
+
+We can see a very strong correlation of -0.81 between the density and the
+alcohol content.
+
+```{r sugar.density}
+ggplot(aes(residual.sugar, density),data = w)+
+  geom_point(color = "blue",
+             alpha = 0.1,
+             position = 'jitter'
+             )+
+  coord_cartesian(xlim = c(quantile(w$residual.sugar, 0.01),quantile(w$residual.sugar, 0.99)),
+                  ylim = c(quantile(w$density, 0.03),quantile(w$density, 0.97)))+
+  geom_smooth(method = 'lm', color = "red")+
+  theme_bw()+
+  ggtitle("Density vs Residual Sugar")
+```
+
+There is a very strong correlation of 0.83 between the residual sugar and the
+density of the wine.
+
+```{r alcohol.quality}
+ggplot(aes(alcohol, quality), data = w)+
+  geom_point(color = 'blue', alpha = 0.2, size = 3, position = 'jitter')+
+  coord_cartesian(xlim = c(quantile(w$alcohol, 0.05),
+                           quantile(w$alcohol, 0.95)))+
+  geom_smooth(method = 'lm', color = 'red')+
+  theme_bw()+
+  ggtitle("Quality vs Alcohol")
+```
+
+Very small but positive correlation can be seen between quality and alcohol
+content. Quality increases gradually as alcohol content increases.
+
+```{r density.quality}
+ggplot(aes(density, quality), data = w)+
+  geom_point(color = 'blue', alpha = 0.4, position = 'jitter')+
+  coord_cartesian(xlim = c(quantile(w$density, 0.01),
+                           quantile(w$density, 0.99)))+
+  geom_smooth(method = 'lm', color = 'red')+
+  theme_bw()+
+  ggtitle("Quality vs Density")
+```
+
+There is a weak but negative correlation between the quality and the density
+of the wine.
+
+```{r acidity.quality}
+ggplot(aes(total.acidity, quality), data = w)+
+  geom_point(color = 'blue', alpha = 0.4, position = 'jitter')+
+  coord_cartesian(xlim = c(quantile(w$total.acidity, .05), quantile(w$total.acidity, 0.95)))+
+  geom_smooth(method = 'lm', color = 'red')+
+  theme_bw()+
+  ggtitle("Quality vs Total Acidity")
+```
+
+There is a weak correlation of -0.13 between quality and total acidity. The
+almost horizontal line shows that there is a weak dependence of total acidity on quality.
+
+# Bivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the \
+investigation. How did the feature(s) of interest vary with other features in \
+the dataset?
+
+A very strong correlation was observed in case of alcohol. It had a strong
+correlation with density and residual sugar. But there was no feature which had
+a strong enough correlation with quality. It was difficult to assign a higher
+significance level to a particular feature. 
+
+### Did you observe any interesting relationships between the other features \
+(not the main feature(s) of interest)?
+
+The density had some interesting correlation with other features. Excluding the
+main features, the density had the highest values for correlation co-efficients.
+
+### What was the strongest relationship you found?
+
+The strongest correlation was between density and residual sugar. Correlation
+coefficient for this pair was 0.83. Density and alcohol also have high
+correlation of -0.81.
+
+# Multivariate Plots Section
+
+```{r res.sug.density.quality}
+ggplot(aes(density, residual.sugar, color = quality.level), data = w)+
+  geom_point(alpha = 0.4, size = 1, position = 'jitter')+
+  coord_cartesian(xlim = c(quantile(w$density, 0.05),
+                           quantile(w$density, 0.95)))+
+  geom_smooth(method = 'lm', color = 'red')+
+  facet_wrap(~quality.level)+
+  scale_color_brewer(palette = 'Set3')+
+  theme_dark()+
+  ggtitle("Residual Sugar vs Density for each Quality Level")
+```
+
+There is positive correlation between residual sugar and density for every
+quality rating.
+
+```{r alcohol.density.quality}
+ggplot(aes(density, alcohol, color = quality.level), data = w)+
+  geom_point(alpha = 0.5, size = 1, position = 'jitter')+
+  coord_cartesian(xlim = c(quantile(w$density, 0.05),
+                           quantile(w$density, 0.95)),
+                  ylim = c(min(w$alcohol),max(w$alcohol)))+
+  geom_smooth(method = 'lm', color = 'red')+
+  facet_wrap(~quality.level)+
+  scale_color_brewer(palette = 'Set3')+
+  theme_dark()+
+  ggtitle("Alcohol vs Density for each Quality Level")
+```
+
+There are very less wines with high quality and they all fall in the top left
+region of the first quadrant here.
+
+Now lets see the behaviour of quality vs the other features of interest, i.e.,
+alcohol, residual sugar and total acidity.
+
+```{r quality.alcohol.res.sug}
+ggplot(aes(alcohol, quality, color = log10(residual.sugar)), data = w)+
+  geom_point(position = 'jitter')+
+  coord_cartesian(xlim = c(quantile(w$alcohol, 0.05),
+                           quantile(w$alcohol, 0.95)))+
+  scale_color_distiller(palette = 'Set4')+
+  theme_bw()+
+  ggtitle("Quality vs Alcohol by Log10(Residual Sugar)")
+```
+
+It looks like high quality wines have high residual sugar(the light green 
+points near quality 8). Coloring by residual sugar does not provide a clear
+separation between high quality and low quality wines.
+
+```{r quality.res.sug.alcohol}
+ggplot(aes(residual.sugar, quality, color = alcohol), data = w)+
+  geom_point(position = 'jitter')+
+  coord_cartesian(xlim = c(quantile(w$residual.sugar, 0.05),
+                           quantile(w$residual.sugar, 0.95)))+
+  scale_color_distiller(palette = 'Set4')+
+  theme_bw()+
+  ggtitle("Quality vs Residual Sugar by Alcohol Content")
+```
+
+Clearly high quality wines have high alcohol content(in the top left part of
+graph). Some low alcohol wines are also there but there are very few.
+
+```{r quality.alcohol.res.sug.total.acidity}
+ggplot(aes(alcohol + log10(residual.sugar), quality, color = total.acidity),
+       data = w)+
+  geom_point(position = 'jitter')+
+  coord_cartesian(xlim = c(quantile(w$alcohol + log10(w$residual.sugar), 0.05),
+                           quantile(w$alcohol + log10(w$residual.sugar), 0.95)))+
+  scale_color_distiller(palette = 'Set4')+
+  geom_smooth(method = 'lm', color = 'blue')+
+  theme_bw()+
+  ggtitle('Quality vs combined effect of (alcohol + log10(residual sugar)) by total acidity')
+```
+
+Total acidity does not provide a clear separation between type of wines but this
+graph is showing a weak positive correlation when combined effect of alcohol and
+residual sugar is taken into account.
+
+```{r quality.total.acidity.alcohol.log10(res.sug)}
+ggplot(aes(total.acidity, quality, color = alcohol + log10(residual.sugar)),
+       data = w)+
+  geom_point(position = 'jitter')+
+  coord_cartesian(xlim = c(quantile(w$total.acidity, 0.05),
+                           quantile(w$total.acidity, 0.95)))+
+  scale_color_distiller(palette = 'Set4')+
+  geom_smooth(method = 'lm', color = 'blue')+
+  theme_bw()+
+  ggtitle("Quality vs Total Acidity by alcohol + log10(residual sugar) combined")
+```
+
+Not a strong relation but quality tends to decrease gradually with acidity
+content. The same result was obtained in the bivariate plots section.
+
+These plots do not provide a strong idea of how to predict the quality of a
+wine. Very few relationships exist and they all have a very weak correlation
+when it comes to predicting quality directly. 
+
+```{r linear.models, echo = T}
+m1 <- lm(quality ~ alcohol, data = w)
+m2 <- update(m1, ~ . + log10(residual.sugar))
+m3 <- update(m2, ~ . + total.acidity)
+summary(m3)
+```
+
+# Multivariate Analysis
+
+
+### Talk about some of the relationships you observed in this part of the \
+investigation. Were there features that strengthened each other in terms of \
+looking at your feature(s) of interest?
+
+### Were there any interesting or surprising interactions between features?
+
+As seen in bivariate plots section, density has a strong correlation with
+residual sugar and alcohol. No other feature showed this much strong interaction.
+
+### OPTIONAL: Did you create any models with your dataset? Discuss the \
+strengths and limitations of your model.
+
+In order to predict the quality of wines, I tried to fit a linear model to see
+the combined effect of alcohol and residual sugar on the quality of wine. The
+model does not provide any good predictions, the R-squared values is 0.21 and
+there is no feature which is statistically significant(3 stars for all features
+corresponding to low significance level).
+
+------
+
+# Final Plots and Summary
+
+### Plot One
+```{r echo=FALSE, Plot_One}
+ggplot(w)+
+  geom_histogram(aes(residual.sugar),
+                 binwidth = 0.02)+
+  scale_x_log10(breaks = c(1,2,5,10,20))+
+  xlab("residual sugar( g / dm^3)")+
+  ylab("Wines Count")+
+  theme_bw()
+```
+
+### Description One
+
+The distribution of residual sugar appears bimodal. Maybe wines are categorized
+on the basis of sweetness of wine. But there is not a clear separation between
+those categories. Residual sugar contains outliers also.
+
+### Plot Two
+```{r echo=FALSE, Plot_Two}
+ggplot(aes(residual.sugar, density),data = w)+
+  geom_point(color = "blue",
+             alpha = 0.1,
+             position = 'jitter'
+             )+
+  scale_x_log10(breaks = c(1,2,5,10,20))+
+  coord_cartesian(xlim = c(quantile(w$residual.sugar, 0.01),
+                           quantile(w$residual.sugar, 0.99)),
+                  ylim = c(quantile(w$density, 0.03),
+                           quantile(w$density, 0.97)))+
+  geom_smooth(method = 'lm', color = "red")+
+  xlab("Residual Sugar (g / dm^3)")+
+  ylab("Density (g / cm^3)")+
+  ggtitle("Density vs Log10 Residual Sugar")
+```
+
+### Description Two
+
+Residual sugar has the strongest relationship with other features. It has almost
+linear relationship with density with a correlation coefficient of 0.83.
+
+### Plot Three
+
+```{r echo=FALSE, Plot_Three}
+ggplot(aes(total.acidity, quality, color = alcohol + log10(residual.sugar)),
+       data = w)+
+  geom_point(position = 'jitter')+
+  coord_cartesian(xlim = c(quantile(w$total.acidity, 0.05),
+                           quantile(w$total.acidity, 0.95)))+
+  scale_color_distiller(palette = 'Set4',
+                        name = "Alcohol(% by volume) + \nLog10(Residual Sugar)")+
+  geom_smooth(method = 'lm', color = 'blue')+
+  xlab("Total acidity (g / dm^3)")+
+  ylab("Quality")+
+  ggtitle("Quality vs Total Acidity by combined Alcohol Content + Log10 Residual Sugar")
+```
+
+
+### Description Three
+
+Quality rating has a weak correlation with total acidity. High quality wines
+have less acidity with high alcohol content and residual sugar value.
+
+```{r}
+m1 <- lm(quality ~ total.acidity + log10(residual.sugar) + alcohol,
+         data = w)
+summary(m1)
+```
+
+Linear model also provides a R-squared values of 21.1 %. Only 21% of the
+variance can be explained by these predictors.
+
+------
+
+# Reflection
+
+This dataset contains information about chemical properties of 4898 white wines.
+Exploratory data analysis was carried to study the relationship between
+features. Going through the internet helped to figure out how these features can
+be use collectively to explain the quality of wines. Density has a strong
+correlation with residual sugar and alcohol, but that did not help in predicting
+the quality of wine. No feature could explain a good amount of variance in
+quality. Finally the combined features of total acidity, residual sugar and
+alcohol accounted for only 21% of the variance.
+
+One limitation of this dataset is that the quality rating were more around
+average rating. Most of the wines have rating of 6 and it was difficult to
+generalize a linear model to predict the quality.
+
+One addition which can be done in future analysis is the addition of new
+features which better explain the variance in quality. Including more wines of
+rating other than 6 will help to generalize a regression model trying to predict
+the quality of wine.
+
+# References
+
+1. https://www.everwonderwine.com/blog/2017/1/14/is-there-a-relationship-between-a-wines-alcohol-level-and-its-sweetness?format=amp
+
+2. http://winefolly.com/review/understanding-acidity-in-wine/
